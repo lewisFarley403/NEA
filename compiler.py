@@ -122,23 +122,13 @@ class Variable:
 
     def clear(self):
         self.value = 0
-
-
-class Interpretter:
-    def __init__(self, line, variables, flag):
+class RPN:
+    def __init__(self,exp):
+        self.exp = exp
         self.precedence = {'+': 0, '-': 0, '*': 5, '/': 5, '%': 10, '^': 15}
         self.tokens = list(self.precedence.keys())
         self.tokens.append('(')
         self.tokens.append(')')
-        self.operators = {'assignment': '=', 'block': ':'}
-        self.line = line
-        self.variables = variables
-        self.instructionSet = {'+':'ADD','-':'SUB','*':'MULT','/':'DIV','^':'EXP','%':'MOD','=':'STR'}
-
-    def parse(self):
-        flags = []
-        if self.line.find('if') != -1:  # if the line is selection
-            pass
     def CreateRPN(self,exp):
         # https://www.andreinc.net/2010/10/05/converting-infix-to-rpn-shunting-yard-algorithm
         # tokens = ['+', '-', '*', '/', '^', '%']
@@ -196,6 +186,23 @@ class Interpretter:
             print(f'also adding {x}')
             output.append(x)
         return output
+
+
+    
+
+class Interpretter:
+    def __init__(self, line, variables, flag):
+
+        self.operators = {'assignment': '=', 'block': ':'}
+        self.line = line
+        self.variables = variables
+        self.instructionSet = {'+':'ADD','-':'SUB','*':'MULT','/':'DIV','^':'EXP','%':'MOD','=':'STR'}
+
+    def parse(self):
+        flags = []
+        if self.line.find('if') != -1:  # if the line is selection
+            pass
+
 
 
 
