@@ -123,12 +123,14 @@ class Variable:
     def clear(self):
         self.value = 0
 class RPN:
-    def __init__(self,exp):
+    def __init__(self,exp,variables):
+        self.variables = variables
         self.exp = exp
         self.precedence = {'+': 0, '-': 0, '*': 5, '/': 5, '%': 10, '^': 15}
         self.tokens = list(self.precedence.keys())
         self.tokens.append('(')
         self.tokens.append(')')
+        self.rpn = self.CreateRPN(self.exp)
     def CreateRPN(self,exp):
         # https://www.andreinc.net/2010/10/05/converting-infix-to-rpn-shunting-yard-algorithm
         # tokens = ['+', '-', '*', '/', '^', '%']
@@ -186,13 +188,67 @@ class RPN:
             print(f'also adding {x}')
             output.append(x)
         return output
+    def compileToAssembly(self,instructionSet,outputVariable,currentAddress):
+        s = Stack()
+        instructions =[]
+        for char in self.rpn:
+            if char not in self.tokens:
+                s.push(char)
+            else:
+                print(s.isEmpty())
+                x=s.pop()
+                y=s.pop()
+                print(x,y)
+                intermediate = Variable(currentAddress,0)
+                self.variables[f'~{currentAddress}'] = intermediate
+                code,errors = self.cnvtToAssembly(x,y,intermediate,char,instructionSet)
+                print(code)
+                if errors!=[]:
+                    return None,errors
+                instructions.append(code)
+                s.push(f'~{currentAddress}')
+                currentAddress+=1
+        return instructions,[]
+        
+    def formatOperand(self,x):
+        try:
+            x=int(x)
+            x=f'#{x}'
+            return x
+        except ValueError: 
+            if x in list(self.variables.keys()):
+                var = self.variables[x]
+                x=f'{var.addr}'
+                return x
+            else:
+                #error, it means that the variable doesnt exist
+                return None
+            
+
+    def cnvtSymbol(self,symbol,instructionSet):
+        return instructionSet[symbol]
+    def cnvtToAssembly(self,op1,op2,outputVariable,symbol,instructionSet):
+        errors =[]
+        formattedOp1=self.formatOperand(op1)
+        if formattedOp1 == None:
+            errors.append(f'{op1} is undefined')
+            return None,errors
+        formattedOp2=self.formatOperand(op2)
+        if formattedOp2 == None:
+            errors.append(f'{op2} is undefined')
+            return None,errors
+        
+        output = outputVariable.addr
+
+        assemblyAcronym =self.cnvtSymbol(symbol,instructionSet)
+        return [assemblyAcronym,formattedOp1,formattedOp2,output],[]
 
 
     
 
 class Interpretter:
     def __init__(self, line, variables, flag):
-
+        
         self.operators = {'assignment': '=', 'block': ':'}
         self.line = line
         self.variables = variables
@@ -209,17 +265,8 @@ class Interpretter:
 if __name__ == '__main__':
     #t = Tree('(3+5)/4', None)
     # print(CreateRPN('5+2*5+6'))
-    print(CreateRPN('( ( 1  + 2 ) / 3 ) ^ 4'))
-    print(CreateRPN('( ( 10  + 2 ) / 13 ) ^ 4'))
-    #t = Tree('5*(4+3)/4', None)
-    # print(t.smartSplit(t.root.value))
-    # print(t.parseExpression(t.root.value))
-    # print(t.root)
-    # print(t.smartSplit(t.root.value))
-    #print('generating ', t.generateGraph(t.root))
-    # print(t.root.children[1].parent)
-    # t.traverse()
-    # print(5*(4+3)*4/3)
-    # print(t.root.children[-1].forCalculating)
-# [/5, []\, /+, []\, /3*4, [/3, []\, /*, []\, /4, []\]\]
-# [/5, []\, /+, []\, /3*4, [/3, []\, /*, []\, /4, []\]\]
+    # print(CreateRPN('( ( 1  + 2 ) / 3 ) ^ 4'))
+    # print(CreateRPN('( ( 10  + 2 ) / 13 ) ^ 4'))
+    r1 = RPN('( ( 2 + 2 ) / 3 ) ^ 4',{})
+    output = Variable(100,0)
+    print(r1.compileToAssembly({'+':'ADD','-':'SUB','*':'MULT','/':'DIV','^':'EXP','%':'MOD','=':'STR'},output,0))
