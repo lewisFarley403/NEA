@@ -22,6 +22,7 @@ class Stack:
         else:
             return False
 
+
 class Variable:
     def __init__(self, addr, value):
         self.addr = addr
@@ -38,8 +39,10 @@ class Variable:
 
     def clear(self):
         self.value = 0
+
+
 class RPN:
-    def __init__(self,exp,variables):
+    def __init__(self, exp, variables):
         self.variables = variables
         self.exp = exp
         self.precedence = {'+': 0, '-': 0, '*': 5, '/': 5, '%': 10, '^': 15}
@@ -47,7 +50,8 @@ class RPN:
         self.tokens.append('(')
         self.tokens.append(')')
         self.rpn = self.CreateRPN(self.exp)
-    def CreateRPN(self,exp):
+
+    def CreateRPN(self, exp):
         # https://www.andreinc.net/2010/10/05/converting-infix-to-rpn-shunting-yard-algorithm
         # tokens = ['+', '-', '*', '/', '^', '%']
         exp = exp.replace(' ', '')
@@ -59,23 +63,23 @@ class RPN:
         for token in tokens:
             for char in exp:
                 if char == token:
-                    #space at the start incase the symbol follows from a number, numbers wont have spaces because theyre not in the token array
-                    newExp +=f' {char} '
+                    # space at the start incase the symbol follows from a number, numbers wont have spaces because theyre not in the token array
+                    newExp += f' {char} '
                 else:
-                    newExp+=char # its a number
-            exp = newExp #ready to repeat for the next character
+                    newExp += char  # its a number
+            exp = newExp  # ready to repeat for the next character
 
-            newExp =''
-        tokenised = exp.split(' ')#do the split
-        newTokenised=[]
-        #remove the unecessary blank characters from subsequent symbols, ie ')*' ->' )  * ' which makes a mess when split 
+            newExp = ''
+        tokenised = exp.split(' ')  # do the split
+        newTokenised = []
+        # remove the unecessary blank characters from subsequent symbols, ie ')*' ->' )  * ' which makes a mess when split
         for t in tokenised:
-            if t !='':
+            if t != '':
                 newTokenised.append(t)
-        tokenised= newTokenised
+        tokenised = newTokenised
         print(tokenised)
 
-        #shunting yard algorithm
+        # shunting yard algorithm
         s = Stack()
         output = []
         for i, t in enumerate(tokenised):
@@ -104,78 +108,62 @@ class RPN:
             print(f'also adding {x}')
             output.append(x)
         return output
-    def compileToAssembly(self,instructionSet,outputVariable,currentAddress):
+
+    def compileToAssembly(self, instructionSet, currentAddress):
         s = Stack()
-        instructions =[]
+        instructions = []
         for char in self.rpn:
             if char not in self.tokens:
                 s.push(char)
             else:
                 print(s.isEmpty())
-                x=s.pop()
-                y=s.pop()
-                print(x,y)
-                intermediate = Variable(currentAddress,0)
+                x = s.pop()
+                y = s.pop()
+                print(x, y)
+                intermediate = Variable(currentAddress, 0)
                 self.variables[f'~{currentAddress}'] = intermediate
-                code,errors = self.cnvtToAssembly(x,y,intermediate,char,instructionSet)
+                code, errors = self.cnvtToAssembly(
+                    x, y, intermediate, char, instructionSet)
                 print(code)
-                if errors!=[]:
-                    return None,errors
+                if errors != []:
+                    return None, errors, None
                 instructions.append(code)
                 s.push(f'~{currentAddress}')
-                currentAddress+=1
-        return instructions,[]
-        
-    def formatOperand(self,x):
+                currentAddress += 1
+        return instructions, [], currentAddress
+
+    def formatOperand(self, x):
         try:
-            x=int(x)
-            x=f'#{x}'
+            x = int(x)
+            x = f'#{x}'
             return x
-        except ValueError: 
+        except ValueError:
             if x in list(self.variables.keys()):
                 var = self.variables[x]
-                x=f'{var.addr}'
+                x = f'{var.addr}'
                 return x
             else:
-                #error, it means that the variable doesnt exist
+                # error, it means that the variable doesnt exist
                 return None
-            
 
-    def cnvtSymbol(self,symbol,instructionSet):
+    def cnvtSymbol(self, symbol, instructionSet):
         return instructionSet[symbol]
-    def cnvtToAssembly(self,op1,op2,outputVariable,symbol,instructionSet):
-        errors =[]
-        formattedOp1=self.formatOperand(op1)
+
+    def cnvtToAssembly(self, op1, op2, outputVariable, symbol, instructionSet):
+        errors = []
+        formattedOp1 = self.formatOperand(op1)
         if formattedOp1 == None:
             errors.append(f'{op1} is undefined')
-            return None,errors
-        formattedOp2=self.formatOperand(op2)
+            return None, errors
+        formattedOp2 = self.formatOperand(op2)
         if formattedOp2 == None:
             errors.append(f'{op2} is undefined')
-            return None,errors
-        
+            return None, errors
+
         output = outputVariable.addr
 
-        assemblyAcronym =self.cnvtSymbol(symbol,instructionSet)
-        return [assemblyAcronym,formattedOp1,formattedOp2,output],[]
-
-
-    
-
-class Interpretter:
-    def __init__(self, line, variables, flag):
-        
-        self.operators = {'assignment': '=', 'block': ':'}
-        self.line = line
-        self.variables = variables
-        self.instructionSet = {'+':'ADD','-':'SUB','*':'MULT','/':'DIV','^':'EXP','%':'MOD','=':'STR'}
-
-    def parse(self):
-        flags = []
-        if self.line.find('if') != -1:  # if the line is selection
-            pass
-
-
+        assemblyAcronym = self.cnvtSymbol(symbol, instructionSet)
+        return [assemblyAcronym, formattedOp1, formattedOp2, output], []
 
 
 if __name__ == '__main__':
@@ -183,6 +171,7 @@ if __name__ == '__main__':
     # print(CreateRPN('5+2*5+6'))
     # print(CreateRPN('( ( 1  + 2 ) / 3 ) ^ 4'))
     # print(CreateRPN('( ( 10  + 2 ) / 13 ) ^ 4'))
-    r1 = RPN('( ( 2 + 2 ) / 3 ) ^ 4',{})
-    output = Variable(100,0)
-    print(r1.compileToAssembly({'+':'ADD','-':'SUB','*':'MULT','/':'DIV','^':'EXP','%':'MOD','=':'STR'},output,0))
+    r1 = RPN('( ( 2 + 2 ) / 3 ) ^ 4', {})
+    output = Variable(100, 0)
+    print(r1.compileToAssembly({'+': 'ADD', '-': 'SUB', '*': 'MULT',
+                                '/': 'DIV', '^': 'EXP', '%': 'MOD', '=': 'STR'}, 0))

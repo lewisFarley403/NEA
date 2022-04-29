@@ -1,35 +1,33 @@
 class Solution:
-    def findRotateSteps(self, ring: str, key: str) -> int:
-        steps = 0
-        for char in key:
-            # print(ring)
-            pos = []
-            dist = 10000000000
-            index = None
-            for i, letter in enumerate(ring):
-                #print(ring[0], char)
-                if letter == char:
-                    if abs(i - len(ring)) < abs(dist):
-                        dist = i-len(ring)
-                        index = i
-                    if i < abs(dist):
-                        print(i, char)
-                        dist = i
-                        index = i
-                dire = -1 if dist < 0 else 1
-            for _ in range(abs(dist)):
-                # print(ring)
-                ring = self.rotate(ring, dire)
-            #print(abs(dire), char)
-            steps += abs(dist)+1
-        return steps
+    def romanToInt(self, s: str) -> int:
+        symbolMap = {'M': 1000, 'D': 500, 'C': 100,
+                     'L': 50, 'X': 10, 'V': 5, 'I': 1}
+        previousSymbol = s[0]
+        total = 0
+        run = []
+        for symbol in s:
 
-    def rotate(self, ring, direction):
-        # 1 left, -1 right
-        if direction == 1:
-            return ring[1:]+ring[0]
-        return ring[-1]+ring[:-1]
+            if symbolMap[symbol] <= symbolMap[previousSymbol]:
+                run.append(symbol)
+            else:
+                reverseRun = run[::-1]
+                for i, sym in enumerate(reverseRun):
+                    if symbolMap[sym] >= symbolMap[symbol]:
+                        break
+                sub = 0
+                for notSub in reverseRun[i:]:
+                    if len(reverseRun) > 1:
+                        total += symbolMap[notSub]
+                for symb in reverseRun[:i] if i != 0 else [reverseRun[0]]:
+                    sub += symbolMap[symb]
+                total += (symbolMap[symbol]-sub)
+                run = []
+            previousSymbol = symbol
+        for i in run:
+            total += symbolMap[i]
+        return total
 
 
 s = Solution()
-print(s.findRotateSteps('godding', 'godding'))
+print(s.romanToInt(
+    "MCMXCIV"))
