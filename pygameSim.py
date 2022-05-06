@@ -4,6 +4,7 @@ import sys
 import cv2
 from simulation import CPU
 from simulation import Simulation
+import numpy as np
 
 
 class Sim:
@@ -14,9 +15,12 @@ class Sim:
         # self.sim = Simulation()
 
     def show(self):
-        # get the image from the screen
-        img = pygame.surfarray.array3d(pygame.display.get_surface())
-        return img
+        string_image = pygame.image.tostring(self.screen, 'RGB', True)
+
+        temp_surf = pygame.image.fromstring(
+            string_image, (self.size[0], self.size[1]), 'RGB')
+        tmp_arr = pygame.surfarray.array3d(temp_surf)
+        return tmp_arr
 
     def drawCPU(self):
         # draw main cpu body
@@ -94,12 +98,18 @@ class Sim:
 
 
 s = Sim()
+s.drawCPU()
+frame = np.asarray(s.show())
+# show frame in cv2
+cv2.imshow('frame', frame)
+# wait for keypress
+if cv2.waitKey(1) & 0xFF == ord('q'):
+    cv2.destroyAllWindows()
 while True:
     # set background to white
     s.screen.fill((255, 255, 255))
-
-    frame = s.drawCPU()
-
+    s.drawCPU()
+    # refresh screen
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
