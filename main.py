@@ -1,15 +1,8 @@
 import pygame
 import os
+# set up pygame window
 pygame.init()
-size = (700, 500)
-screen = pygame.display.set_mode(size)
-# bus = pygame.image.load(os.getcwd()+r'\bus.jpg')
-
-bus = pygame.image.load(
-    os.getcwd()+r'\bus2.png')
-while True:
-    # main game loops
-    screen.blit(bus, (0, 0))
-    pygame.display.update()
-pygame.quit()
-quit()
+# make a full screen pygame window
+screen = pygame.display.set_mode((800, 600))
+# set the window title
+pygame.display.set_caption("CPU Simulation")

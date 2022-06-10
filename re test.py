@@ -45,5 +45,7 @@ for i, m in enumerate(x):
     # print(m.string)
     # print((m.start(0), m.end(0)))
     exp = exp[:m.end(0)+i]+' '+exp[m.end(0)+i:]
-    tokens = exp.split(' ')
+    t = exp.split(' ')
+    t.pop(0)
+    tokens.pop(-1)
     print(tokens)

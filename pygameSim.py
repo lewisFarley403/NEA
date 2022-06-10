@@ -7,19 +7,24 @@ from simulation import Simulation
 import numpy as np
 
 
-class Sim:
-    def __init__(self):
+class VisualSimulation:
+    def __init__(self, simulation):
         pygame.init()
         self.size = (700, 500)
         self.screen = pygame.display.set_mode(self.size)
+        self.simulation = simulation
         # self.sim = Simulation()
 
     def show(self):
-        string_image = pygame.image.tostring(self.screen, 'RGB', True)
+        string_image = pygame.image.tostring(self.screen, 'RGB', False)
 
         temp_surf = pygame.image.fromstring(
-            string_image, (self.size[0], self.size[1]), 'RGB')
-        tmp_arr = pygame.surfarray.array3d(temp_surf)
+            string_image, (self.size[0], self.size[1]), 'RGB', True)
+        tmp_arr = np.asarray(pygame.surfarray.array3d(temp_surf))
+        print(tmp_arr.shape)
+
+        # rotate tmp_arr 90 degrees, the image from pygame is rotated 90 degrees for some reason
+        tmp_arr = np.rot90(tmp_arr, 1)
         return tmp_arr
 
     def drawCPU(self):
@@ -96,20 +101,38 @@ class Sim:
 
         pygame.display.flip()
 
+    # def executeInstruction(self):
+    #     # execute instruction
+    #     # get instruction from memory
+    #     instruction = self.memory.getInstruction(self.pc)
+    #     # get opcode from instruction
+    #     opcode = instruction[0]
+    #     # get operands from instruction
+    #     operands = instruction[1:]
+    #     # get function from opcode
+    #     function = self.opcode_functions[opcode]
+    #     # call function with operands
+    #     function(operands)
+    #     # increment pc
+    #     self.pc += 1
 
-s = Sim()
-s.drawCPU()
-frame = np.asarray(s.show())
-# show frame in cv2
-cv2.imshow('frame', frame)
-# wait for keypress
-if cv2.waitKey(1) & 0xFF == ord('q'):
-    cv2.destroyAllWindows()
-while True:
-    # set background to white
+
+if __name__ == '__main__':
+    s = VisualSimulation(None)
     s.screen.fill((255, 255, 255))
     s.drawCPU()
-    # refresh screen
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
+    s.drawCPU()
+    frame = s.show()
+    # show frame in cv2
+    cv2.imshow('frame', frame)
+    # wait for keypress
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        cv2.destroyAllWindows()
+    while True:
+        # set background to white
+        s.screen.fill((255, 255, 255))
+        s.drawCPU()
+        # refresh screen
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()

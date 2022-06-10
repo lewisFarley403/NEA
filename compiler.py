@@ -140,6 +140,7 @@ class RPN:
         except ValueError:
             if x in list(self.variables.keys()):
                 var = self.variables[x]
+                print(var)
                 x = f'{var.addr}'
                 return x
             else:
@@ -150,6 +151,7 @@ class RPN:
         return instructionSet[symbol]
 
     def cnvtToAssembly(self, op1, op2, outputVariable, symbol, instructionSet):
+        '''args: '''
         errors = []
         formattedOp1 = self.formatOperand(op1)
         if formattedOp1 == None:
@@ -171,7 +173,11 @@ if __name__ == '__main__':
     # print(CreateRPN('5+2*5+6'))
     # print(CreateRPN('( ( 1  + 2 ) / 3 ) ^ 4'))
     # print(CreateRPN('( ( 10  + 2 ) / 13 ) ^ 4'))
-    r1 = RPN('( ( 2 + 2 ) / 3 ) ^ 4', {})
-    output = Variable(100, 0)
-    print(r1.compileToAssembly({'+': 'ADD', '-': 'SUB', '*': 'MULT',
-                                '/': 'DIV', '^': 'EXP', '%': 'MOD', '=': 'STR'}, 0))
+    # r1 = RPN('( ( a + 2 ) / 3 ) ^ 4', {'a': Variable(0, 10)})
+    r1 = RPN('(2+2)*4',{})
+    print(r1.rpn)
+
+    # r1 = RPN('2 + 2 ', {})
+    # output = Variable(100, 0)
+    # print(r1.compileToAssembly({'+': 'ADD', '-': 'SUB', '*': 'MULT',
+    #                             '/': 'DIV', '^': 'EXP', '%': 'MOD', '=': 'STR'}, 0))
