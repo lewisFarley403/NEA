@@ -28,11 +28,21 @@ class Variable {
     this.value = value;
   }
 }
-
+const InstructionSet = {
+  "+": "ADD",
+  "-": "SUB",
+  "*": "MULT",
+  "/": "DIV",
+  "^": "EXP",
+  "%": "MOD",
+  "=": "STR",
+};
 class RPN {
-  constructor(exp, variables) {
+  constructor(exp, variables, outputR) {
     this.exp = exp;
+    this.isAssignment = true ? this.exp.includes("=") : false;
     this.variables = variables;
+    this.previousInstructions = [];
     this.precedence = {
       "+": 0,
       "-": 0,
@@ -41,6 +51,7 @@ class RPN {
       "%": 10,
       "^": 15,
     };
+    this.outputR = outputR;
     //defined by shunting yard algorithm
     this.tokens = Object.keys(this.precedence);
     //need to know special chars to identify the operators, cant use precdedence keys because () dont have precedence
@@ -49,6 +60,19 @@ class RPN {
     this.tokens.push(")");
 
     this.rpn = this.createRPN(this.exp); //create the correct order of operations
+    this.instructions = this.compileToAssembly(InstructionSet, this.outputR);
+  }
+  setPreviousInstructions(instructions) {
+    this.previousInstructions = instructions;
+  }
+  concat(otherRPN) {
+    console.log(this.variables);
+    // this.variables.concat(otherRPN.variables);
+    this.variables = Object.assign(this.variables, otherRPN.variables);
+    this.previousInstructions.concat(
+      otherRPN.previousInstructions,
+      otherRPN.instructions[0] //raw instructions
+    ); //needs to be compiled to have .instructions. maybe make the instruction set global or standardise it so that it doesnt need to be passed as a parameter to everything
   }
   createRPN(exp) {
     let rpn = [];
@@ -89,35 +113,42 @@ class RPN {
     //returns: assembly code, errors
     //instructionSet is a dict of instructions and their corresponding assembly acronym
     //startRegister is the register to start writing to
-
-    console.log("running at the beginning of the function");
+    instructionSet = InstructionSet;
+    console.info("running at the beginning of the function");
     var s = new Stack();
     var instructions = [];
     for (var char of this.rpn) {
       if (!this.tokens.includes(char)) {
-        console.log(`pushed ${char} to the stack`);
+        console.info(`pushed ${char} to the stack`);
         s.push(char);
       } else {
         var x = s.pop();
         var y = s.pop();
-        console.log(`x:y popped ${x}, ${y}`);
+        console.info(`x:y popped ${x}, ${y}`);
 
         var intermediate = `R${startRegister}`;
         startRegister++;
         var code, errors;
-        console.log(`creating instruction ${char} ${x}, ${y}`);
+        console.info(`creating instruction ${char} ${x}, ${y}`);
         var y = this.cnvtInstruction(x, y, intermediate, char, instructionSet);
         code = y[0];
         errors = y[1];
-        console.log(`code is ${code}`);
+        console.info(`code is ${code}`);
         if (errors.length > 0) {
-          console.log(`errors are ${errors}`);
+          console.info(`errors are ${errors}`);
           return null, errors, null;
         }
         instructions.push(code);
         s.push(`R${startRegister - 1}`);
       }
     }
+
+    if (this.isAssignment) {
+      let identifier = this.exp.slice("=")[0];
+      this.variables[identifier] = new Variable(`R${startRegister - 1}`, 0);
+    }
+    this.outputR = startRegister++;
+
     // console.log(instructions);
     return [instructions, [], startRegister];
   }
@@ -159,7 +190,7 @@ class RPN {
         x = this.variables.x;
       } else {
         //panic
-        console.log("panic");
+        console.log(`panic ${x}`);
       }
     }
     return x;
