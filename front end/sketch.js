@@ -1,3 +1,8 @@
+//todo:
+//fix the variable system to make it so that the multiline compile will work
+// animate the simulation
+// add registers to the diagram somehow, maybe have under code, like ram but sep to not confuse
+
 var sim;
 var ram = [];
 const ramSize = 16;
@@ -22,7 +27,7 @@ function setup() {
     }
   }
   function translateMultiline(lines) {
-    console.error(`lines of code ${lines}`);
+    //console.error(`lines of code ${lines}`);
 
     var register = 0; // the first free register to start storing variables to
 
@@ -36,18 +41,20 @@ function setup() {
       //RPN first line
       var lineRPN = new RPN(line, variables, register);
       var res = lineRPN.compileToAssembly({}, register);
-      console.error(`${line} has this res ${res}`);
-      console.error("rpn obj for this line :");
-      console.error(lineRPN);
-      console.error(`confirming variables is correct`);
-      console.error(lineRPN.variables);
+      //console.error(`${line} has this res ${res}`);
+      //console.error("rpn obj for this line :");
+      //console.error(lineRPN);
+      //console.error(`confirming variables is correct`);
+      //console.error(lineRPN.variables);
       register = res[2] + 1; //sets the next available register to the 1+ the last register used by that line
 
       variables = Object.assign(variables, lineRPN.variables); //merges the variables to use for the next line
-      console.error(`variables after the merger ${variables}`);
+      //console.error(`variables after the merger ${variables}`);
       instructions = instructions.concat(res[0]); //merge the instructions
-      console.error(instructions);
+      //console.error(instructions);
     }
+    console.log("REALLY IMPORTANT");
+    console.log(lineRPN.variables);
     return instructions;
   }
   //sets up the code input area

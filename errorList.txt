@@ -1,0 +1,4 @@
+code - desc - solved(y/n)
+1 - variables are coming up undefined when they arent. intermediate variables so its all broken - n
+
+2 - startRegister nan - m
