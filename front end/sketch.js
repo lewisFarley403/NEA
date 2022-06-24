@@ -6,6 +6,7 @@
 var sim;
 var ram = [];
 const ramSize = 16;
+var a;
 
 function setup() {
   //send axios request to get the program
@@ -78,6 +79,10 @@ function setup() {
 
       var assembly = translateMultiline(inst);
       console.log(assembly);
+      for (var i = 0; i < assembly.length; i++) {
+        console.log(assembly[i]);
+        ram[i].value(assembly[i]);
+      }
       // sim.assembly = assembly;
     })
     .position(0, 150);
@@ -96,13 +101,16 @@ function setup() {
     0,
     0
   );
+  a = sim.fetchValue(0);
 }
+
+var currentAnimation = null;
 
 function draw() {
   background(220);
   sim.show();
-  // sim.values.MDR += 1;
-  // ram[9].value(sim.values.MDR);
+
+  a.drawFrame();
 }
 
 function windowResized() {

@@ -4,11 +4,13 @@ class Sim {
   constructor(assembly, w, ram, x, y) {
     this.ram = ram;
     this.assembly = assembly;
+    this.sign = loadImage("bus stop.png");
 
     this.values = { PC: 0, ACC: 0, MDR: 0, MAR: 0, register: {} };
     this.width = (1 / 2) * w;
     this.x = x;
     this.y = y;
+    this.drawCpu();
   }
   setWidth(w) {
     this.width = 0.5 * w;
@@ -44,6 +46,7 @@ class Sim {
     //blank
     //mdr
     fill(boxFill);
+    this.marAddr = { x: this.x + 3 * (this.width / 4), y: this.y + height / 2 };
     rect(
       this.x + 3 * (this.width / 4),
       this.y + height / 2,
@@ -143,5 +146,11 @@ class Sim {
         break;
     }
     this.values.register[ouputRegister] = this.values.ACC;
+  }
+  fetchValue(address) {
+    console.log(this.marAddr);
+    var a = new FetchAnimation(null, this.marAddr, { x: 0, y: 0 }, 1);
+    console.log(a);
+    return a;
   }
 }
